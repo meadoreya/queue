@@ -1,0 +1,686 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>CafeFlow - Premium Queue Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed": "#dbe1ff",
+                    "primary-fixed-dim": "#b4c5ff",
+                    "surface-variant": "#e1dfff",
+                    "on-secondary-fixed": "#002113",
+                    "on-secondary-container": "#00714d",
+                    "surface": "#fcf8ff",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-container": "#ffecea",
+                    "on-surface-variant": "#434655",
+                    "secondary-fixed-dim": "#4edea3",
+                    "secondary": "#006c49",
+                    "error": "#ba1a1a",
+                    "surface-tint": "#0053db",
+                    "surface-container": "#eeecff",
+                    "on-primary": "#ffffff",
+                    "on-surface": "#121151",
+                    "on-primary-container": "#eeefff",
+                    "tertiary-fixed": "#ffdad7",
+                    "tertiary-container": "#cf2c30",
+                    "surface-container-low": "#f5f2ff",
+                    "outline-variant": "#c3c6d7",
+                    "secondary-fixed": "#6ffbbe",
+                    "on-tertiary-fixed-variant": "#930013",
+                    "on-tertiary": "#ffffff",
+                    "primary": "#004ac6",
+                    "surface-container-highest": "#e1dfff",
+                    "on-tertiary-fixed": "#410004",
+                    "tertiary-fixed-dim": "#ffb3ad",
+                    "error-container": "#ffdad6",
+                    "surface-bright": "#fcf8ff",
+                    "primary-container": "#2563eb",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "on-background": "#121151",
+                    "surface-dim": "#d8d6ff",
+                    "outline": "#737686",
+                    "tertiary": "#ab0b1c",
+                    "on-primary-fixed": "#00174b",
+                    "inverse-surface": "#282966",
+                    "background": "#fcf8ff",
+                    "secondary-container": "#6cf8bb",
+                    "inverse-primary": "#b4c5ff",
+                    "surface-container-high": "#e8e6ff",
+                    "on-secondary-fixed-variant": "#005236",
+                    "on-error": "#ffffff",
+                    "inverse-on-surface": "#f2efff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xs": "0.25rem",
+                    "xl": "2rem",
+                    "sm": "0.5rem",
+                    "md": "1rem",
+                    "lg": "1.5rem",
+                    "margin": "2rem",
+                    "gutter": "1.5rem",
+                    "base": "4px"
+            },
+            "fontFamily": {
+                    "label-sm": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "label-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "display": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48; }
+        .sidebar-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .active-view { display: block !important; animation: fade-in 0.4s ease-out; }
+        @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full bg-surface dark:bg-surface-dim shadow-sm border-b border-outline-variant dark:border-outline z-50 flex justify-between items-center px-lg py-xs">
+<div class="flex items-center gap-md">
+<button class="cursor-pointer active:opacity-80 p-xs hover:bg-surface-container-high transition-colors rounded-full flex items-center justify-center" onclick="toggleSidebar()">
+<span class="material-symbols-outlined text-primary">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-primary dark:text-primary-fixed font-bold tracking-tight">CAFEFLOW</h1>
+</div>
+<div class="flex items-center gap-md">
+<div class="flex items-center bg-surface-container-low rounded-full px-xs border border-outline-variant">
+<button class="px-md py-xs rounded-full font-label-lg transition-all text-primary font-bold" id="lang-en" onclick="setLanguage('en')">EN</button>
+<div class="w-px h-4 bg-outline-variant"></div>
+<button class="px-md py-xs rounded-full font-label-lg transition-all text-on-surface-variant" id="lang-id" onclick="setLanguage('id')">ID</button>
+</div>
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-on-surface-variant">translate</span>
+<span class="material-symbols-outlined text-on-surface-variant">settings</span>
+<img alt="Manager Avatar" class="w-8 h-8 rounded-full object-cover border border-outline-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHxpmdsLN07KvntJC0AswIl1X0uAWyes381Cl3EiCmwPc_7_OVWGPgBBmb8PeqQh7mbnHBKEGoMvwqMP_6R4FQ43Mocei6rW9P6HgEjwXz60DSF0sDJsWxxUYTcGkaDMMq5hr7P6Nbsw-otYdhBW1ljBYRkugSGWExS6jzvlY_tIbqngTYVyZPQoT9O3UsYcbe2Pt5V4HaIQkoPImyBJry9SNVZOM22Y6A5pTLRHa56_KvXn90aAGrvksGFapgJxfCukNRLFOJCGHL">
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-low dark:bg-surface-container-lowest border-r border-outline-variant shadow-md z-40 sidebar-transition -translate-x-full md:translate-x-0" id="sidebar">
+<div class="flex flex-col h-full p-md pt-16">
+<div class="flex items-center gap-md px-md py-md mb-md">
+<div class="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined">coffee</span>
+</div>
+<div>
+<h2 class="font-label-lg text-label-lg text-primary" data-t="main_branch">Main Branch</h2>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold" data-t="active_session">Active Session</p>
+</div>
+</div>
+<nav class="flex-1 space-y-xs">
+<button class="w-full flex items-center gap-md px-md py-sm cursor-pointer bg-secondary-container text-on-secondary-container rounded-lg font-bold" id="nav-cashier" onclick="switchView('cashier')">
+<span class="material-symbols-outlined">point_of_sale</span>
+<span class="font-label-lg text-label-lg" data-t="nav_cashier">Cashier Panel</span>
+</button>
+<button class="w-full flex items-center gap-md px-md py-sm cursor-pointer text-on-surface-variant hover:bg-surface-container-highest transition-all rounded-lg" id="nav-kitchen" onclick="switchView('kitchen')">
+<span class="material-symbols-outlined">restaurant</span>
+<span class="font-label-lg text-label-lg" data-t="nav_kitchen">Kitchen Monitor</span>
+</button>
+<button class="w-full flex items-center gap-md px-md py-sm cursor-pointer text-on-surface-variant hover:bg-surface-container-highest transition-all rounded-lg" id="nav-analytics" onclick="switchView('analytics')">
+<span class="material-symbols-outlined">bar_chart</span>
+<span class="font-label-lg text-label-lg" data-t="nav_analytics">Analytics</span>
+</button>
+</nav>
+<div class="mt-auto border-t border-outline-variant pt-md">
+<div class="flex items-center gap-md px-md py-sm cursor-pointer text-on-surface-variant hover:bg-surface-container-highest transition-all rounded-lg mb-xs">
+<span class="material-symbols-outlined">help_outline</span>
+<span class="font-label-lg text-label-lg" data-t="help">Help</span>
+</div>
+<div class="flex items-center gap-md px-md py-sm cursor-pointer text-on-surface-variant hover:bg-surface-container-highest transition-all rounded-lg">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-lg text-label-lg" data-t="logout">Logout</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-0 md:ml-64 pt-16 min-h-screen bg-background p-md">
+<!-- Cashier View -->
+<div class="hidden active-view" id="view-cashier">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-md max-w-[1400px] mx-auto items-start">
+<!-- Left: Order Input (POS Style) -->
+<div class="lg:col-span-5 flex flex-col gap-md">
+<div class="bg-surface border border-outline-variant rounded-xl shadow-sm p-md">
+<h3 class="font-headline-md text-headline-md text-on-surface border-b border-outline-variant pb-xs mb-sm" data-t="new_order">New Order</h3>
+<div class="p-sm bg-primary-container/10 border border-primary-container/20 rounded-xl flex items-center gap-md mb-sm">
+<div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">schedule</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider" data-i18n="waitLabel">Estimated Wait Time</p>
+<p class="font-headline-lg text-headline-lg text-primary font-bold">
+<span class="wait-value">0</span>
+<span class="en-text">mins</span>
+<span class="id-text hidden">menit</span>
+</p>
+</div>
+</div>
+<div class="space-y-sm mb-sm">
+<div>
+<label class="block font-label-lg text-label-lg text-on-surface-variant mb-xs" data-t="cust_name">Customer Name</label>
+<input class="w-full bg-surface border border-outline px-md py-xs rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" id="cust-name" placeholder="e.g. John Doe" type="text">
+</div>
+<div>
+<label class="block font-label-lg text-label-lg text-on-surface-variant mb-xs" data-t="order_type">Order Type</label>
+<div class="flex gap-sm">
+<label class="flex-1 cursor-pointer">
+<input checked="" class="hidden peer" name="order-type" type="radio" value="dine-in">
+<div class="p-xs text-center border border-outline rounded-lg peer-checked:bg-primary peer-checked:text-on-primary peer-checked:border-primary transition-all font-label-lg text-label-lg" data-t="dine_in">Dine In</div>
+</label>
+<label class="flex-1 cursor-pointer">
+<input class="hidden peer" name="order-type" type="radio" value="take-away">
+<div class="p-xs text-center border border-outline rounded-lg peer-checked:bg-tertiary-container peer-checked:text-on-tertiary-container peer-checked:border-tertiary-container transition-all font-label-lg text-label-lg" data-t="take_away">Take Away</div>
+</label>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface border border-outline-variant rounded-xl shadow-sm p-md flex flex-col">
+<div class="flex justify-between items-center mb-sm border-b border-outline-variant pb-xs">
+<div class="flex flex-col">
+<h3 class="font-headline-md text-headline-md text-on-surface" data-t="temp_cart">Order Cart</h3>
+</div>
+<span class="bg-primary-fixed text-on-primary-fixed px-sm py-[2px] rounded-full font-label-sm text-label-sm" id="cart-count">0 Items</span>
+</div>
+<div class="min-h-[110px] overflow-y-auto space-y-xs mb-md pr-xs" id="cart-items">
+<!-- Empty State -->
+<div class="h-full flex flex-col items-center justify-center text-on-surface-variant opacity-50 py-md" id="empty-cart">
+<span class="material-symbols-outlined text-3xl mb-xs">shopping_basket</span>
+<p class="font-body-md text-body-md" data-t="cart_empty">No items added yet</p>
+</div>
+</div>
+<div class="border-t border-outline-variant pt-md mt-auto">
+<div class="flex justify-between items-center mb-md">
+<span class="font-headline-md text-headline-md text-on-surface" data-t="total">Total</span>
+<span class="font-headline-md text-headline-md text-primary font-bold" id="cart-total">Rp 0</span>
+</div>
+<button class="w-full bg-primary text-on-primary py-sm rounded-xl font-headline-md text-headline-md hover:bg-primary-container transition-colors shadow-lg active:scale-[0.98] transition-transform" data-t="send_kitchen" onclick="submitOrder()">
+                            SEND TO KITCHEN
+                        </button>
+</div>
+</div>
+</div>
+<!-- Right: Menu Grid -->
+<div class="lg:col-span-7">
+<div class="bg-surface border border-outline-variant rounded-xl shadow-sm p-md h-full flex flex-col">
+<div class="flex items-center gap-md mb-sm">
+<div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">restaurant_menu</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider" data-t="quick_select">Quick Select Menu</p>
+</div>
+</div>
+<!-- Menu items container with items-start to prevent stretching -->
+<div class="grid grid-cols-2 md:grid-cols-3 gap-md items-start" id="menu-grid">
+<!-- Menu Items Generated by JS -->
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Kitchen View -->
+<div class="hidden" id="view-kitchen">
+<div class="max-w-[1400px] mx-auto space-y-md">
+<!-- Stats Row -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<div class="bg-surface border border-outline-variant rounded-xl shadow-sm p-md flex items-center gap-lg">
+<div class="w-12 h-12 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-2xl">timer</span>
+</div>
+<div>
+<p class="font-label-lg text-label-lg text-on-surface-variant" data-t="active_queue">Active Queue</p>
+<h4 class="font-headline-lg text-headline-lg text-primary" id="stat-active">0</h4>
+</div>
+</div>
+<div class="bg-surface border border-outline-variant rounded-xl shadow-sm p-md flex items-center gap-lg">
+<div class="w-12 h-12 rounded-full bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-2xl">check_circle</span>
+</div>
+<div>
+<p class="font-label-lg text-label-lg text-on-surface-variant" data-t="total_served">Total Served</p>
+<h4 class="font-headline-lg text-headline-lg text-secondary" id="stat-served">0</h4>
+</div>
+</div>
+<div class="bg-surface border border-outline-variant rounded-xl shadow-sm p-md flex items-center gap-lg">
+<div class="w-12 h-12 rounded-full bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-2xl">avg_pace</span>
+</div>
+<div>
+<p class="font-label-lg text-label-lg text-on-surface-variant" data-t="est_wait">Est. Wait Time</p>
+<h4 class="font-headline-lg text-headline-lg text-tertiary">
+<span class="wait-value">0</span>
+<span class="en-text ml-xs">mins</span>
+<span class="id-text hidden ml-xs">menit</span>
+</h4>
+</div>
+</div>
+</div>
+<!-- Active Kitchen Monitor -->
+<div class="bg-surface border border-outline-variant rounded-xl shadow-sm p-md min-h-[400px]">
+<div class="flex justify-between items-center mb-md border-b border-outline-variant pb-md">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary">restaurant_menu</span>
+<h3 class="font-headline-md text-headline-md text-on-surface" data-t="live_monitor">Live Kitchen Monitor</h3>
+</div>
+<div class="flex gap-sm">
+<span class="inline-flex items-center px-sm py-xs bg-primary-fixed text-on-primary-fixed-variant rounded-full text-label-sm font-label-sm">
+<span class="w-2 h-2 rounded-full bg-primary mr-sm animate-pulse"></span> Live
+                        </span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-md items-start" id="active-queue-list">
+<!-- Active Orders Cards -->
+</div>
+<div class="flex flex-col items-center justify-center py-10 opacity-30" id="kitchen-empty">
+<span class="material-symbols-outlined text-6xl mb-md">countertops</span>
+<p class="font-headline-md text-headline-md" data-t="no_orders">Kitchen is currently empty</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Analytics View -->
+<div class="hidden" id="view-analytics">
+<div class="max-w-[1400px] mx-auto space-y-md">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md">
+<div class="bg-surface border border-outline-variant rounded-xl shadow-sm p-md">
+<p class="font-label-lg text-label-lg text-on-surface-variant" data-t="total_revenue">Total Revenue</p>
+<h4 class="font-headline-lg text-headline-lg text-primary" id="ana-revenue">Rp 0</h4>
+</div>
+<div class="bg-surface border border-outline-variant rounded-xl shadow-sm p-md">
+<p class="font-label-lg text-label-lg text-on-surface-variant" data-t="total_orders">Total Orders</p>
+<h4 class="font-headline-lg text-headline-lg text-secondary" id="ana-orders">0</h4>
+</div>
+<div class="bg-surface border border-outline-variant rounded-xl shadow-sm p-md">
+<p class="font-label-lg text-label-lg text-on-surface-variant" data-t="avg_order_val">Avg. Order Value</p>
+<h4 class="font-headline-lg text-headline-lg text-tertiary" id="ana-avg">Rp 0</h4>
+</div>
+<div class="bg-surface border border-outline-variant rounded-xl shadow-sm p-md">
+<p class="font-label-lg text-label-lg text-on-surface-variant" data-t="served_today">Served Today</p>
+<h4 class="font-headline-lg text-headline-lg text-on-background" id="ana-served">0</h4>
+</div>
+</div>
+<!-- Completed History -->
+<div class="bg-surface border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+<div class="p-md border-b border-outline-variant">
+<h3 class="font-headline-md text-headline-md text-on-surface" data-t="order_history">Completed Orders History</h3>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low font-label-lg text-label-lg text-on-surface-variant">
+<tr>
+<th class="px-md py-md" data-t="th_order_id">Order ID</th>
+<th class="px-md py-md" data-t="th_customer">Customer</th>
+<th class="px-md py-md" data-t="th_items">Items</th>
+<th class="px-md py-md" data-t="th_type">Type</th>
+<th class="px-md py-md text-right" data-t="th_total">Total</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md divide-y divide-outline-variant" id="history-table-body">
+<!-- Table rows -->
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- UI Interaction Elements -->
+<div class="fixed bottom-lg right-lg transform translate-y-20 opacity-0 transition-all duration-300 bg-inverse-surface text-inverse-on-surface px-lg py-md rounded-lg shadow-xl flex items-center gap-md z-[100]" id="toast">
+<span class="material-symbols-outlined text-primary-fixed" id="toast-icon">info</span>
+<span id="toast-msg">Action Successful</span>
+</div>
+<script>
+    // State Management
+    let currentLang = 'en';
+    let cart = [];
+    let activeOrders = [];
+    let completedOrders = [];
+    let orderCounter = 101;
+
+    const menuItems = [
+        { id: 1, name_en: 'Espresso', name_id: 'Espresso', price: 25000, icon: 'coffee', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB3o_x-m5So2m5VYcgesV6xFGVqOF4H0TkyKVfgy4ZN4rzHg0SbZmqbp2t7Mx177wk-e1FLj2TRiW68r5ZbtwAzOzvdFP_leasPwu-KGJCUhhNj6d6mUMfGCh66GGLxkf5YF40PZvmMzK6nQ6t0gtkp8uSfhZ3CSWLjoVHiPin7JueR3HTzt3n6MOMP_pZ-gCw9kUoE-f-eT8P5nzufZ4McVyaG4AX9jqmHZC408OGD_PRxWRZkOi60jAwZqtLUyvEK8JcrbUdAVZ15' },
+        { id: 2, name_en: 'Latte', name_id: 'Latte', price: 35000, icon: 'local_cafe', img: 'https://images.unsplash.com/photo-1570968915860-54d5c301fa9f?q=80&w=300&h=300&fit=crop' },
+        { id: 3, name_en: 'Cappuccino', name_id: 'Kapucino', price: 35000, icon: 'coffee_maker', img: 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?q=80&w=300&h=300&fit=crop' },
+        { id: 4, name_en: 'Affogato', name_id: 'Afogato', price: 45000, icon: 'icecream', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBAS1yq8Fuk_LU0VjxTS6BGnBWiNBleu0XbMt3WIQ2ECnGMi_C1wmv4EQfZFyhlj110IayfAKvlHPoajNqQPUPsHeHUQAR9HJiFwA2BWyjvSGDaPbe5Ww40VbPZE9vyhLKdacoXFV6tbMJaRZpr2_aEUMksg5obb3sesD9_rlFgshmlANRali_A8BYARc73vIZTdYyRR6yXSd0C0pmVC9riQUG_bUfDIAG42sb0pvEjQau725Dz5AV7NjV2Su6Da0hdlMKX5oEyvwOL' },
+        { id: 5, name_en: 'Croissant', name_id: 'Kroisan', price: 28000, icon: 'bakery_dining', img: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?q=80&w=300&h=300&fit=crop' },
+        { id: 6, name_en: 'Muffin', name_id: 'Muffin', price: 22000, icon: 'breakfast_dining', img: 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?q=80&w=300&h=300&fit=crop' }
+    ];
+
+    const translations = {
+        en: {
+            main_branch: 'Main Branch', active_session: 'Active Session', nav_cashier: 'Cashier Panel',
+            nav_kitchen: 'Kitchen Monitor', nav_analytics: 'Analytics', help: 'Help', logout: 'Logout',
+            new_order: 'New Order', cust_name: 'Customer Name', order_type: 'Order Type',
+            dine_in: 'Dine In', take_away: 'Take Away', temp_cart: 'Order Cart', cart_empty: 'No items added yet',
+            total: 'Total', send_kitchen: 'SEND TO KITCHEN', quick_select: 'Quick Select Menu',
+            active_queue: 'Active Queue', total_served: 'Total Served', est_wait: 'Est. Wait Time',
+            live_monitor: 'Live Kitchen Monitor', no_orders: 'Kitchen is currently empty',
+            order_history: 'Completed Orders History', th_order_id: 'Order ID', th_customer: 'Customer',
+            th_items: 'Items', th_type: 'Type', th_total: 'Total', complete_btn: 'Complete Order',
+            order_sent: 'Order Sent to Kitchen!', please_name: 'Please enter customer name',
+            please_items: 'Please add items to cart', order_completed: 'Order Marked as Complete',
+            total_revenue: 'Total Revenue', total_orders: 'Total Orders', avg_order_val: 'Avg. Order Value',
+            served_today: 'Served Today', next_queue: 'NEXT IN QUEUE'
+        },
+        id: {
+            main_branch: 'Cabang Utama', active_session: 'Sesi Aktif', nav_cashier: 'Panel Kasir',
+            nav_kitchen: 'Monitor Dapur', nav_analytics: 'Analitik', help: 'Bantuan', logout: 'Keluar',
+            new_order: 'Pesanan Baru', cust_name: 'Nama Pelanggan', order_type: 'Tipe Pesanan',
+            dine_in: 'Makan di Sini', take_away: 'Bawa Pulang', temp_cart: 'Keranjang Pesanan', cart_empty: 'Belum ada pesanan',
+            total: 'Total', send_kitchen: 'KIRIM KE DAPUR', quick_select: 'Menu Pilihan Cepat',
+            active_queue: 'Antrean Aktif', total_served: 'Total Selesai', est_wait: 'Estimasi Tunggu',
+            live_monitor: 'Monitor Dapur Langsung', no_orders: 'Dapur saat ini kosong',
+            order_history: 'Riwayat Pesanan Selesai', th_order_id: 'ID Pesanan', th_customer: 'Pelanggan',
+            th_items: 'Item', th_type: 'Tipe', th_total: 'Total', complete_btn: 'Selesaikan Pesanan',
+            order_sent: 'Pesanan Terkirim ke Dapur!', please_name: 'Silakan masukkan nama pelanggan',
+            please_items: 'Silakan tambahkan item ke keranjang', order_completed: 'Pesanan Selesai',
+            total_revenue: 'Total Pendapatan', total_orders: 'Total Pesanan', avg_order_val: 'Rata-rata Pesanan',
+            served_today: 'Dilayani Hari Ini', next_queue: 'BERIKUTNYA'
+        }
+    };
+
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('-translate-x-full');
+    }
+
+    function setLanguage(lang) {
+        currentLang = lang;
+        document.querySelectorAll('[data-t]').forEach(el => {
+            const key = el.getAttribute('data-t');
+            if (translations[lang][key]) el.textContent = translations[lang][key];
+        });
+
+        const custInput = document.getElementById('cust-name');
+        if(custInput) custInput.placeholder = lang === 'en' ? 'e.g. John Doe' : 'misal: John Doe';
+
+        document.getElementById('lang-en').classList.toggle('bg-primary', lang === 'en');
+        document.getElementById('lang-en').classList.toggle('text-on-primary', lang === 'en');
+        document.getElementById('lang-en').classList.toggle('text-on-surface-variant', lang === 'id');
+        document.getElementById('lang-id').classList.toggle('bg-primary', lang === 'id');
+        document.getElementById('lang-id').classList.toggle('text-on-primary', lang === 'id');
+        document.getElementById('lang-id').classList.toggle('text-on-surface-variant', lang === 'en');
+
+        // Handle split translation for wait time card
+        document.querySelectorAll('.en-text').forEach(el => el.classList.toggle('hidden', lang !== 'en'));
+        document.querySelectorAll('.id-text').forEach(el => el.classList.toggle('hidden', lang !== 'id'));
+
+        renderMenu();
+        renderCart();
+        renderKitchen();
+        renderAnalytics();
+        updateWaitTimeUI();
+    }
+
+    function switchView(view) {
+        document.getElementById('view-cashier').classList.toggle('hidden', view !== 'cashier');
+        document.getElementById('view-kitchen').classList.toggle('hidden', view !== 'kitchen');
+        document.getElementById('view-analytics').classList.toggle('hidden', view !== 'analytics');
+        
+        document.getElementById('view-cashier').classList.toggle('active-view', view === 'cashier');
+        document.getElementById('view-kitchen').classList.toggle('active-view', view === 'kitchen');
+        document.getElementById('view-analytics').classList.toggle('active-view', view === 'analytics');
+
+        const navCashier = document.getElementById('nav-cashier');
+        const navKitchen = document.getElementById('nav-kitchen');
+        const navAnalytics = document.getElementById('nav-analytics');
+        
+        [navCashier, navKitchen, navAnalytics].forEach(btn => {
+            btn.className = "w-full flex items-center gap-md px-md py-sm cursor-pointer text-on-surface-variant hover:bg-surface-container-highest transition-all rounded-lg";
+        });
+
+        const activeBtn = view === 'cashier' ? navCashier : (view === 'kitchen' ? navKitchen : navAnalytics);
+        activeBtn.className = "w-full flex items-center gap-md px-md py-sm cursor-pointer bg-secondary-container text-on-secondary-container rounded-lg font-bold";
+
+        if (window.innerWidth < 768) {
+            const sidebar = document.getElementById('sidebar');
+            if(!sidebar.classList.contains('-translate-x-full')) toggleSidebar();
+        }
+        
+        if (view === 'analytics') renderAnalytics();
+        if (view === 'kitchen') renderKitchen();
+        if (view === 'cashier') updateWaitTimeUI();
+    }
+
+    function showToast(msg, type = 'success') {
+        const toast = document.getElementById('toast');
+        const toastMsg = document.getElementById('toast-msg');
+        const toastIcon = document.getElementById('toast-icon');
+        
+        toastMsg.textContent = msg;
+        toastIcon.textContent = type === 'success' ? 'check_circle' : 'error';
+        toastIcon.className = `material-symbols-outlined ${type === 'success' ? 'text-secondary-fixed' : 'text-error'}`;
+        
+        toast.classList.remove('translate-y-20', 'opacity-0');
+        setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+    }
+
+    function updateWaitTimeUI() {
+        const waitMinutes = activeOrders.length * 10;
+        document.querySelectorAll('.wait-value').forEach(el => {
+            el.textContent = waitMinutes;
+        });
+    }
+
+    function renderMenu() {
+        const grid = document.getElementById('menu-grid');
+        if(!grid) return;
+        grid.innerHTML = menuItems.map(item => `
+            <div onclick="addToCart(${item.id})" class="bg-surface border border-outline-variant rounded-xl overflow-hidden hover:shadow-lg transition-all cursor-pointer active:scale-95 group">
+                <div class="h-28 bg-surface-container relative overflow-hidden">
+                    <img src="${item.img}" 
+                         alt="${item[`name_${currentLang}`]}" 
+                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                    <div class="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <span class="material-symbols-outlined text-on-primary-container bg-primary-container rounded-full p-xs shadow-md">add</span>
+                    </div>
+                </div>
+                <div class="p-sm">
+                    <p class="font-label-lg text-label-lg text-on-surface truncate">${item[`name_${currentLang}`]}</p>
+                    <p class="font-body-md text-body-md text-primary font-bold">Rp ${item.price.toLocaleString()}</p>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function addToCart(itemId) {
+        const item = menuItems.find(i => i.id === itemId);
+        const existing = cart.find(i => i.id === itemId);
+        if (existing) {
+            existing.qty++;
+        } else {
+            cart.push({ ...item, qty: 1 });
+        }
+        renderCart();
+    }
+
+    function removeFromCart(itemId) {
+        cart = cart.filter(i => i.id !== itemId);
+        renderCart();
+    }
+
+    function renderCart() {
+        const container = document.getElementById('cart-items');
+        const emptyState = document.getElementById('empty-cart');
+        if(!container) return;
+        
+        if (cart.length === 0) {
+            container.innerHTML = '';
+            if(emptyState) container.appendChild(emptyState);
+            document.getElementById('cart-total').textContent = 'Rp 0';
+            document.getElementById('cart-count').textContent = '0 Items';
+            return;
+        }
+
+        container.innerHTML = cart.map(item => `
+            <div class="flex justify-between items-center bg-surface-container-low p-sm rounded-lg border border-outline-variant">
+                <div class="flex gap-sm items-center">
+                    <span class="material-symbols-outlined text-primary font-thin text-sm">${item.icon}</span>
+                    <div>
+                        <p class="font-label-lg text-label-lg leading-tight">${item[`name_${currentLang}`]}</p>
+                        <p class="font-label-sm text-label-sm text-on-surface-variant">x${item.qty} · Rp ${(item.price * item.qty).toLocaleString()}</p>
+                    </div>
+                </div>
+                <button onclick="removeFromCart(${item.id})" class="text-error hover:bg-error-container p-xs rounded-full transition-colors">
+                    <span class="material-symbols-outlined text-xs">close</span>
+                </button>
+            </div>
+        `).join('');
+
+        const total = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+        document.getElementById('cart-total').textContent = `Rp ${total.toLocaleString()}`;
+        document.getElementById('cart-count').textContent = `${cart.reduce((a,b)=>a+b.qty, 0)} Item(s)`;
+    }
+
+    function submitOrder() {
+        const nameEl = document.getElementById('cust-name');
+        const name = nameEl.value.trim();
+        const type = document.querySelector('input[name="order-type"]:checked').value;
+
+        if (!name) return showToast(translations[currentLang].please_name, 'error');
+        if (cart.length === 0) return showToast(translations[currentLang].please_items, 'error');
+
+        const order = {
+            id: orderCounter++,
+            customer: name,
+            type: type,
+            items: JSON.parse(JSON.stringify(cart)),
+            total: cart.reduce((acc, item) => acc + (item.price * item.qty), 0),
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+
+        activeOrders.push(order);
+        cart = [];
+        nameEl.value = '';
+        renderCart();
+        renderKitchen();
+        updateWaitTimeUI();
+        showToast(translations[currentLang].order_sent);
+    }
+
+    function renderKitchen() {
+        const container = document.getElementById('active-queue-list');
+        const emptyState = document.getElementById('kitchen-empty');
+        if(!container) return;
+        
+        if (activeOrders.length === 0) {
+            container.innerHTML = '';
+            if(emptyState) emptyState.classList.remove('hidden');
+        } else {
+            if(emptyState) emptyState.classList.add('hidden');
+            container.innerHTML = activeOrders.map((order, idx) => `
+                <div class="bg-surface border border-outline-variant rounded-xl shadow-md overflow-hidden flex flex-col hover:border-primary transition-all">
+                    <div class="p-md bg-surface-container-high flex justify-between items-start">
+                        <div>
+                            <span class="font-label-sm text-label-sm text-on-surface-variant">#${order.id}</span>
+                            <h4 class="font-headline-md text-headline-md text-primary truncate max-w-[120px]">${order.customer}</h4>
+                        </div>
+                        <span class="px-sm py-xs rounded-full font-label-sm text-label-sm ${order.type === 'dine-in' ? 'bg-primary-container text-on-primary-container' : 'bg-tertiary-container text-on-tertiary-container'}">
+                            ${order.type === 'dine-in' ? translations[currentLang].dine_in : translations[currentLang].take_away}
+                        </span>
+                    </div>
+                    <div class="p-md flex-1">
+                        <div class="space-y-xs mb-md">
+                            ${order.items.map(i => `
+                                <div class="flex justify-between font-body-md text-body-md">
+                                    <span>${i.qty}x ${i[`name_${currentLang}`]}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="flex justify-between items-center text-on-surface-variant font-label-sm mb-md">
+                            <span>Ordered at ${order.timestamp}</span>
+                        </div>
+                        <button onclick="completeOrder(${order.id})" class="w-full bg-secondary text-on-secondary py-xs rounded-lg font-label-lg text-label-lg hover:bg-secondary-container hover:text-on-secondary-container transition-all flex items-center justify-center gap-sm">
+                            <span class="material-symbols-outlined text-sm">check</span>
+                            ${translations[currentLang].complete_btn}
+                        </button>
+                    </div>
+                    ${idx === 0 ? `<div class="bg-primary text-white text-[10px] text-center font-bold tracking-widest py-1 animate-pulse">${translations[currentLang].next_queue}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        const statActive = document.getElementById('stat-active');
+        const statServed = document.getElementById('stat-served');
+        
+        if(statActive) statActive.textContent = activeOrders.length;
+        if(statServed) statServed.textContent = completedOrders.length;
+        updateWaitTimeUI();
+    }
+
+    function completeOrder(orderId) {
+        const index = activeOrders.findIndex(o => o.id === orderId);
+        if (index !== -1) {
+            const completed = activeOrders.splice(index, 1)[0];
+            completedOrders.unshift(completed);
+            renderKitchen();
+            updateWaitTimeUI();
+            showToast(translations[currentLang].order_completed);
+        }
+    }
+
+    function renderAnalytics() {
+        const tbody = document.getElementById('history-table-body');
+        if(!tbody) return;
+
+        tbody.innerHTML = completedOrders.map(order => `
+            <tr class="hover:bg-surface-container transition-colors">
+                <td class="px-md py-md font-bold text-primary">#${order.id}</td>
+                <td class="px-md py-md">${order.customer}</td>
+                <td class="px-md py-md">
+                    <span class="text-on-surface-variant">${order.items.map(i => `${i.qty} ${i[`name_${currentLang}`]}`).join(', ')}</span>
+                </td>
+                <td class="px-md py-md">
+                    <span class="text-label-sm font-label-sm px-sm py-xs rounded-full ${order.type === 'dine-in' ? 'bg-primary-fixed text-on-primary-fixed' : 'bg-tertiary-fixed text-on-tertiary-fixed'}">
+                        ${order.type === 'dine-in' ? translations[currentLang].dine_in : translations[currentLang].take_away}
+                    </span>
+                </td>
+                <td class="px-md py-md text-right font-bold">Rp ${order.total.toLocaleString()}</td>
+            </tr>
+        `).join('');
+
+        const totalRev = completedOrders.reduce((a, b) => a + b.total, 0);
+        const totalOrdersCount = completedOrders.length;
+        const avgOrderVal = totalOrdersCount > 0 ? Math.round(totalRev / totalOrdersCount) : 0;
+
+        document.getElementById('ana-revenue').textContent = `Rp ${totalRev.toLocaleString()}`;
+        document.getElementById('ana-orders').textContent = totalOrdersCount;
+        document.getElementById('ana-avg').textContent = `Rp ${avgOrderVal.toLocaleString()}`;
+        document.getElementById('ana-served').textContent = totalOrdersCount;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        setLanguage('en');
+        renderMenu();
+        renderKitchen();
+        updateWaitTimeUI();
+    });
+</script>
+</body></html>
