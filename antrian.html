@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>CAFEFLOW - Professional POS & Queue System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #0052cc;
+            --primary-light: #eff6ff;
+            --success: #10b981;
+            --border: #e2e8f0;
+            --dine-in: #0052cc;
+            --take-away: #dc2626;
+            --wait-bg: #e0e7ff;
+            --wait-text: #1e40af;
+            --mint-active: #58efa9; /* Warna hijau mint persis sesuai foto fiks */
+        }
+
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+        body { background-color: #f5f7fb; color: var(--text-main); display: flex; min-height: 100vh; overflow-y: auto; }
+        
+        /* Sidebar Navigation Layout (Sesuai Foto Kedua) */
+        .sidebar { width: 240px; background: var(--card-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px 14px; position: fixed; height: 100vh; left: 0; top: 0; z-index: 10; }
+        .logo-section { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; padding-left: 8px; }
+        .logo-icon { background: var(--primary); color: white; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .logo-text { font-size: 16px; font-weight: 700; color: #0052cc; }
+        .branch-tag { font-size: 11px; color: var(--text-muted); display: block; margin-top: 1px; font-weight: 500; }
+        
+        .menu-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+        .menu-item { padding: 12px 14px; border-radius: 8px; font-size: 14px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: 0.15s; display: flex; align-items: center; gap: 10px; }
+        .menu-item:hover { background: #f8fafc; color: var(--text-main); }
+        .menu-item.active { background: var(--mint-active); color: #0f172a; } /* Hijau mint aktif */
+        
+        .sidebar-footer { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
+        .footer-link { font-size: 13px; color: var(--text-muted); text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+
+        /* Main Workspace Content Frame */
+        .main-wrapper { flex: 1; padding: 20px 30px; margin-left: 240px; width: calc(100% - 240px); min-width: 320px; }
+        
+        /* Top Utility Navbar */
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 12px; height: 40px; }
+        .hamburger-icon { font-size: 20px; color: var(--text-muted); cursor: pointer; }
+        .topbar-right { display: flex; align-items: center; gap: 16px; }
+        .lang-switch-capsule { display: flex; align-items: center; justify-content: space-between; background: #e2e8f0; padding: 4px 10px; border-radius: 30px; cursor: pointer; width: 80px; height: 32px; font-size: 11px; font-weight: 700; color: var(--text-muted); position: relative; user-select: none; }
+        .lang-active-slider { background: var(--primary); color: white; position: absolute; width: 36px; height: 24px; border-radius: 20px; display: flex; align-items: center; justify-content: center; left: 4px; transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .lang-switch-capsule.en .lang-active-slider { left: 40px; }
+        .top-icon-btn { font-size: 18px; color: var(--text-muted); cursor: pointer; }
+
+        /* SPA Views tab panels */
+        .tab-view { display: none; }
+        .tab-view.active { display: block; }
+
+        /* Layout Grid Arrangements */
+        .split-grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 20px; align-items: start; }
+        @media (max-width: 1024px) { .split-grid { grid-template-columns: 1fr; } }
+        
+        .full-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        .widget-card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); margin-bottom: 20px; }
+        .widget-card h2 { font-size: 14px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 16px; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; }
+
+        /* FIX TAMPILAN: Kotak Wait Time Abu-Ungu Persis Foto Kedua */
+        .standalone-wait-box { background: #eef2ff; border: 1px solid #dee2e6; padding: 14px 16px; border-radius: 10px; margin-bottom: 16px; display: flex; align-items: center; gap: 14px; color: #1e3a8a; }
+        .wait-box-icon { font-size: 20px; background: white; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); color: #3b82f6; }
+        .wait-box-details { display: flex; flex-direction: column; }
+        .wait-box-title { font-size: 11px; font-weight: 700; color: #4b5563; text-transform: uppercase; letter-spacing: 0.5px; }
+        .wait-box-time { font-size: 14px; font-weight: 700; color: #1e3a8a; margin-top: 2px; }
+
+        /* Form Input styling */
+        .form-row { margin-bottom: 14px; }
+        label { font-size: 13px; font-weight: 600; color: #374151; display: block; margin-bottom: 6px; }
+        input[type="text"] { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; background: #f8fafc; font-weight: 500; }
+        input[type="text"]:focus { outline: none; border-color: var(--primary); background: #fff; }
+        
+        /* Tombol Dine In / Take Away Kotak Sesuai Foto Kedua */
+        .type-selector-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .type-btn { background: #fff; border: 1px solid var(--border); padding: 12px; text-align: center; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: 0.15s; color: var(--text-main); }
+        .type-btn.active { background: #0052cc; color: white; border-color: #0052cc; }
+
+        /* Quick Click Cards Menu (Harga Rupiah Asli Persis Foto Kedua) */
+        .menu-items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; align-items: start; }
+        .menu-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; cursor: pointer; transition: 0.15s; display: flex; flex-direction: column; position: relative; }
+        .menu-card:hover { transform: translateY(-2px); border-color: var(--primary); }
+        .menu-img-frame { width: 100%; height: 110px; background-size: cover; background-position: center; }
+        .menu-info-box { padding: 12px; display: flex; flex-direction: column; gap: 2px; }
+        .menu-title-text { font-size: 13px; font-weight: 600; color: var(--text-main); }
+        .menu-price-text { font-size: 12px; font-weight: 700; color: #0052cc; }
+        .menu-add-icon-badge { position: absolute; top: 40%; right: 40%; background: #0052cc; color: white; width: 28px; height: 28px; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+        .menu-card:hover .menu-add-icon-badge { display: flex; }
+
+        /* Order Cart Box & Button Send To Kitchen Locked At Bottom */
+        .cart-wrapper-box { background: #f8fafc; border: 1px dashed var(--border); border-radius: 8px; padding: 12px; margin-bottom: 12px; max-height: 140px; overflow-y: auto; }
+        .cart-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .cart-badge-count { background: #e2e8f0; color: var(--text-main); font-size: 11px; padding: 2px 6px; border-radius: 10px; font-weight: 600; }
+        .cart-row-item { display: flex; justify-content: space-between; align-items: center; background: white; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 6px; font-size: 12px; font-weight: 500; }
+        .btn-delete-item { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 14px; font-weight: bold; }
+        .cart-total-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 2px 0 2px; font-weight: 700; font-size: 14px; border-top: 1px solid var(--border); margin-bottom: 14px; }
+
+        button.action-submit-btn { width: 100%; padding: 14px; background: #0052cc; color: white; font-weight: 700; font-size: 13px; border: none; border-radius: 8px; cursor: pointer; transition: 0.1s; letter-spacing: 0.5px; text-transform: uppercase; }
+        button.action-submit-btn:hover { background: #0043a8; }
+        
+        /* Kitchen Button */
+        button.action-kitchen-btn { background: var(--success); color: white; border: none; padding: 10px 16px; font-size: 13px; font-weight: 600; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        button.action-kitchen-btn:hover { background: #059669; }
+        button.action-kitchen-btn:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; }
+        
+        .btn-csv-export-style { background: #475569; border: none; color: white; padding: 8px 14px; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.15s; }
+        .btn-csv-export-style:hover { background: #334155; }
+
+        /* KITCHEN LAYOUT components */
+        .kanban-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-top: 14px; }
+        .kanban-card { background: white; border: 1px solid var(--border); padding: 14px; border-radius: 10px; position: relative; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .kanban-card.active-now { border: 2px solid #0052cc; background: #fcfdfe; }
+        .card-header-badge-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .id-badge { background: var(--primary-light); color: var(--primary); font-size: 11px; font-weight: 700; padding: 1px 5px; border-radius: 4px; }
+        
+        /* Void Order Button container on card */
+        .right-header-actions-wrap { display: flex; align-items: center; gap: 8px; }
+        .btn-void-order-action { background: none; border: none; color: var(--danger); font-size: 11px; font-weight: 700; cursor: pointer; padding: 2px 4px; border-radius: 4px; transition: 0.15s; }
+        .btn-void-order-action:hover { background: #fef2f2; }
+        
+        .srv-badge { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; color: white; text-transform: uppercase; }
+        .badge-dine { background: #0052cc; }
+        .badge-take { background: #dc2626; }
+        .cust-name-header { font-size: 14px; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; }
+        .sub-items-ul { list-style: none; padding-left: 2px; }
+        .sub-items-ul li { font-size: 12px; color: #475569; padding: 2px 0; display: flex; align-items: center; gap: 4px; }
+        .sub-items-ul li::before { content: "•"; color: var(--primary); }
+
+        /* ANALYTICS SCREEN DASHBOARD DATA ROW COUNTERS */
+        .analytics-metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
+        .metric-mini-card { background: white; border: 1px solid var(--border); padding: 16px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .metric-info-label p { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-bottom: 2px; }
+        .metric-info-label h3 { font-size: 22px; font-weight: 700; }
+        .metric-icon-circle { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .bg-blue { background: #eff6ff; color: #3b82f6; }
+        .bg-green { background: #ecfdf5; color: #10b981; }
+        .bg-amber { background: #fffbeb; color: #d97706; }
+
+        .table-responsive-box { width: 100%; overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; background: white; margin-top: 14px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
+        th { background: #f8fafc; padding: 10px 14px; font-weight: 600; border-bottom: 1px solid var(--border); color: #475569; text-transform: uppercase; font-size: 10px; }
+        td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: #334155; }
+        tr:last-child td { border-bottom: none; }
+        
+        .cart-empty-text, .empty-placeholder { text-align: center; color: var(--text-muted); font-style: italic; padding: 20px 0; font-size: 12px; width: 100%; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo-section">
+            <div class="logo-icon">☕</div>
+            <div>
+                <div class="logo-text">CAFEFLOW</div>
+                <span class="branch-tag" data-i18n="branchTag">Main Branch</span>
+            </div>
+        </div>
+        <ul class="menu-list">
+            <li class="menu-item active" id="btn-nav-cashier" onclick="switchTab('cashier')">🖥️ <span data-i18n="navCashier">Cashier Panel</span></li>
+            <li class="menu-item" id="btn-nav-kitchen" onclick="switchTab('kitchen')">🍳 <span data-i18n="navKitchen">Kitchen Monitor</span></li>
+            <li class="menu-item" id="btn-nav-analytics" onclick="switchTab('analytics')">📊 <span data-i18n="navAnalytics">Analytics</span></li>
+        </ul>
+        <div class="sidebar-footer">
+            <a class="footer-link">❓ <span data-i18n="lblHelp">Help</span></a>
+            <a class="footer-link">↪️ <span data-i18n="lblLogout">Logout</span></a>
+        </div>
+    </div>
+
+    <div class="main-wrapper">
+        <div class="topbar">
+            <span class="hamburger-icon">☰</span>
+            <div class="topbar-right">
+                <div class="lang-switch-capsule" id="langCapsule" onclick="toggleLanguageSystem()">
+                    <span>ID</span>
+                    <span>EN</span>
+                    <div class="lang-active-slider" id="langSliderLabel">ID</div>
+                </div>
+                <span class="top-icon-btn">🌐</span>
+                <span class="top-icon-btn">⚙️</span>
+            </div>
+        </div>
+
+        <div id="view-cashier" class="tab-view active">
+            <div class="split-grid">
+                <div class="widget-card">
+                    <h2 data-i18n="hNewOrder">New Order</h2>
+
+                    <div class="standalone-wait-box">
+                        <div class="wait-box-icon">🕒</div>
+                        <div class="wait-box-details">
+                            <span id="waitLabelText" data-i18n="waitLabel">ESTIMASI WAKTU TUNGGU</span>
+                            <span class="wait-box-time" id="globalWaitTimeVal">0 menit</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <label for="customerName" data-i18n="lblCustName">Customer Name</label>
+                        <input type="text" id="customerName" placeholder="e.g. John Doe" data-i18n-placeholder="phCustName" autocomplete="off">
+                    </div>
+
+                    <div class="form-row">
+                        <label data-i18n="lblOrderType">Order Type</label>
+                        <div class="type-selector-row">
+                            <div class="type-btn active" id="type-dine" onclick="setServiceType('Dine In')" data-i18n="optDine">Dine In</div>
+                            <div class="type-btn" id="type-take" onclick="setServiceType('Take Away')" data-i18n="optTake">Take Away</div>
+                        </div>
+                    </div>
+
+                    <div class="cart-wrapper-box">
+                        <div class="cart-title">
+                            <span data-i18n="hCart">Order Cart</span>
+                            <span class="cart-badge-count" id="cartBadgeCountVal">0 Items</span>
+                        </div>
+                        <div id="cartItemsContainer">
+                            <span class="cart-empty-text" data-i18n="emptyCart">No items added yet</span>
+                        </div>
+                    </div>
+
+                    <div class="cart-total-bar">
+                        <span data-i18n="lblTotal">Total</span>
+                        <span id="cartTotalVal">Rp 0</span>
+                    </div>
+
+                    <button class="action-submit-btn" onclick="submitToKitchenQueue()" data-i18n="btnSend">SEND TO KITCHEN</button>
+                </div>
+
+                <div class="widget-card">
+                    <h2 data-i18n="hQuickMenu">Quick Select Menu</h2>
+                    <div class="menu-items-grid" id="menuGridContainer"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-kitchen" class="tab-view">
+            <div class="full-grid">
+                <div class="widget-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid var(--border);">
+                        <h2 style="margin:0; border:none;" data-i18n="hProcessing">Sedang Diproses</h2>
+                        <button class="action-kitchen-btn" id="btnCompleteOrder" onclick="dequeueOrderFromKitchen()">
+                            ✔ <span data-i18n="btnComplete">Complete Current Order</span>
+                        </button>
+                    </div>
+                    
+                    <div class="kanban-grid" id="kitchenKanbanList">
+                        <div class="empty-placeholder" data-i18n="emptyQueue">Tidak ada antrean pesanan berjalan saat ini.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-analytics" class="tab-view">
+            <div class="analytics-metrics-row">
+                <div class="metric-mini-card">
+                    <div class="metric-info-label">
+                        <p data-i18n="statActive">Antrean Aktif</p>
+                        <h3 id="statActiveVal">0</h3>
+                    </div>
+                    <div class="metric-icon-circle bg-blue">👥</div>
+                </div>
+                <div class="metric-mini-card">
+                    <div class="metric-info-label">
+                        <p data-i18n="statServed">Total Dilayani</p>
+                        <h3 id="statServedVal">0</h3>
+                    </div>
+                    <div class="metric-icon-circle bg-green">✨</div>
+                </div>
+                <div class="metric-mini-card">
+                    <div class="metric-info-label">
+                        <p data-i18n="statWait">Estimasi Tunggu</p>
+                        <h3 id="statWaitVal">0 menit</h3>
+                    </div>
+                    <div class="metric-icon-circle bg-amber">🕒</div>
+                </div>
+            </div>
+
+            <div class="full-grid">
+                <div class="widget-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom:1px solid var(--border); padding-bottom:12px; margin-bottom:4px;">
+                        <h2 style="margin:0; border:none;" data-i18n="hHistory">History Log Pemesanan</h2>
+                        
+                        <button class="btn-csv-export-style" onclick="exportHistoryLogsToCSV()">
+                            <span>📊</span> <span data-i18n="btnExport">Ekspor Laporan (CSV)</span>
+                        </button>
+                    </div>
+                    
+                    <div class="table-responsive-box">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th data-i18n="thID">ID Antrean</th>
+                                    <th data-i18n="thName">Nama Pelanggan</th>
+                                    <th data-i18n="thType">Jenis Layanan</th>
+                                    <th data-i18n="thItems">Detail Pesanan</th>
+                                    <th data-i18n="thTotal">Total Pembayaran</th>
+                                </tr>
+                            </thead>
+                            <tbody id="analyticsTableBody">
+                                <tr>
+                                    <td colspan="5" class="empty-placeholder" style="text-align:center" data-i18n="emptyHistory">Belum ada catatan riwayat transaksi selesai.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- TRANSLATION METADATA (i18n - FIX TEXT SEPARATED) ---
+        const translations = {
+            id: {
+                branchTag: "Cabang Utama",
+                navCashier: "Panel Kasir",
+                navKitchen: "Monitor Dapur",
+                navAnalytics: "Log Analitik",
+                hNewOrder: "New Order",
+                waitLabel: "ESTIMASI WAKTU TUNGGU",
+                lblCustName: "Customer Name",
+                phCustName: "Masukkan nama pelanggan...",
+                lblOrderType: "Order Type",
+                optDine: "Dine In",
+                optTake: "Take Away",
+                hCart: "Order Cart",
+                emptyCart: "No items added yet",
+                lblTotal: "Total",
+                btnSend: "SEND TO KITCHEN",
+                hQuickMenu: "Quick Select Menu",
+                hProcessing: "Sedang Diproses",
+                btnComplete: "Selesaikan Pesanan Terdepan",
+                emptyQueue: "Tidak ada antrean pesanan berjalan saat ini.",
+                statActive: "Antrean Aktif",
+                statServed: "Total Dilayani",
+                statWait: "Estimasi Tunggu",
+                hHistory: "History Log Pemesanan",
+                thID: "ID Antrean",
+                thName: "Nama Pelanggan",
+                thType: "Jenis Layanan",
+                thItems: "Detail Pesanan",
+                thTotal: "Total Pembayaran",
+                emptyHistory: "Belum ada catatan riwayat transaksi selesai.",
+                alertError: "⚠️ Harap isi nama pelanggan dan pilih minimal 1 menu cepat!",
+                alertReady: "✅ NOTIFIKASI KASIR: Pesanan Q-{id} atas nama {name} sudah selesai di dapur!",
+                minsUnit: "menit",
+                btnExport: "Ekspor Laporan (CSV)",
+                btnVoid: "Void",
+                voidConfirm: "Apakah Anda yakin ingin membatalkan/void pesanan antrean ini?",
+                lblHelp: "Help",
+                lblLogout: "Logout"
+            },
+            en: {
+                branchTag: "Main Branch",
+                navCashier: "Cashier Panel",
+                navKitchen: "Kitchen Monitor",
+                navAnalytics: "Analytics Logs",
+                hNewOrder: "New Order",
+                waitLabel: "ESTIMATED WAIT TIME",
+                lblCustName: "Customer Name",
+                phCustName: "Enter customer name...",
+                lblOrderType: "Order Type",
+                optDine: "Dine In",
+                optTake: "Take Away",
+                hCart: "Order Cart",
+                emptyCart: "No items added yet",
+                lblTotal: "Total",
+                btnSend: "SEND TO KITCHEN",
+                hQuickMenu: "Quick Select Menu",
+                hProcessing: "Active Cooking",
+                btnComplete: "Complete Current Order",
+                emptyQueue: "No pending orders in line right now.",
+                statActive: "Active Queue",
+                statServed: "Total Customers Served",
+                statWait: "Estimated Wait",
+                hHistory: "Completed Transaction History Logs",
+                thID: "Queue ID",
+                thName: "Customer Name",
+                thType: "Service Type",
+                thItems: "Detail Orders",
+                thTotal: "Total Bill",
+                emptyHistory: "No logged transaction records found.",
+                alertError: "⚠️ Please provide customer name and add at least 1 item to cart!",
+                alertReady: "✅ NOTICE TO BASE CASHIER: Order Q-{id} for {name} is ready for pick-up!",
+                minsUnit: "mins",
+                btnExport: "Export Report (CSV)",
+                btnVoid: "Void",
+                voidConfirm: "Are you sure you want to void/cancel this queue order?",
+                lblHelp: "Help",
+                lblLogout: "Logout"
+            }
+        };
+
+        const menuDatabase = [
+            { id: "espresso", name: "Espresso", price: 25000, img: "https://images.unsplash.com/photo-1510701175596-1ae49f15cb38?w=300" },
+            { id: "latte", name: "Latte", price: 35000, img: "https://images.unsplash.com/photo-1541167760496-1628856ab772?w=300" },
+            { id: "cappuccino", name: "Cappuccino", price: 35000, img: "https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=300" },
+            { id: "affogato", name: "Affogato", price: 45000, img: "https://images.unsplash.com/photo-1594911774802-8822a707c993?w=300" },
+            { id: "croissant", name: "Croissant", price: 28000, img: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=300" },
+            { id: "muffin", name: "Muffin", price: 22000, img: "https://images.unsplash.com/photo-1607958996333-41aef7caefaa?w=300" }
+        ];
+
+        let currentLang = 'id';
+        let queue = [];
+        let historyLog = [];
+        let currentCartItems = [];
+        let chosenServiceType = 'Dine In';
+        let globalIdCounter = 1;
+        let cumulativeServedCount = 0;
+
+        window.onload = function() {
+            renderQuickMenuGrid();
+            updateAllLayoutViews();
+        };
+
+        function switchTab(viewId) {
+            document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+
+            if(viewId === 'cashier') {
+                document.getElementById('view-cashier').classList.add('active');
+                document.getElementById('btn-nav-cashier').classList.add('active');
+            } else if(viewId === 'kitchen') {
+                document.getElementById('view-kitchen').classList.add('active');
+                document.getElementById('btn-nav-kitchen').classList.add('active');
+            } else if(viewId === 'analytics') {
+                document.getElementById('view-analytics').classList.add('active');
+                document.getElementById('btn-nav-analytics').classList.add('active');
+            }
+        }
+
+        function toggleLanguageSystem() {
+            const capsule = document.getElementById('langCapsule');
+            const slider = document.getElementById('langSliderLabel');
+
+            if (currentLang === 'id') {
+                currentLang = 'en';
+                capsule.classList.add('en');
+                slider.innerText = "EN";
+            } else {
+                currentLang = 'id';
+                capsule.classList.remove('en');
+                slider.innerText = "ID";
+            }
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if(translations[currentLang][key]) el.innerText = translations[currentLang][key];
+            });
+
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if(translations[currentLang][key]) el.placeholder = translations[currentLang][key];
+            });
+
+            updateAllLayoutViews();
+        }
+
+        function setServiceType(typeString) {
+            chosenServiceType = typeString;
+            document.getElementById('type-dine').classList.remove('active');
+            document.getElementById('type-take').classList.remove('active');
+            
+            if(typeString === 'Dine In') document.getElementById('type-dine').classList.add('active');
+            else document.getElementById('type-take').classList.add('active');
+        }
+
+        function renderQuickMenuGrid() {
+            const container = document.getElementById('menuGridContainer');
+            container.innerHTML = "";
+
+            menuDatabase.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "menu-card";
+                card.onclick = () => addItemToTemporaryCart(item.id);
+                card.innerHTML = `
+                    <div class="menu-img-frame" style="background-image: url('${item.img}')"></div>
+                    <div class="menu-info-box">
+                        <span class="menu-title-text">${item.name}</span>
+                        <span class="menu-price-text">Rp ${item.price.toLocaleString('id-ID')}</span>
+                    </div>
+                    <div class="menu-add-icon-badge">+</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function addItemToTemporaryCart(menuId) {
+            const targetProduct = menuDatabase.find(p => p.id === menuId);
+            const existingInCart = currentCartItems.find(item => item.id === menuId);
+            
+            if (existingInCart) {
+                existingInCart.qty++;
+            } else {
+                currentCartItems.push({
+                    id: targetProduct.id,
+                    name: targetProduct.name,
+                    price: targetProduct.price,
+                    qty: 1
+                });
+            }
+            renderTemporaryCartList();
+        }
+
+        function removeSingleCartRow(index) {
+            currentCartItems.splice(index, 1);
+            renderTemporaryCartList();
+        }
+
+        function renderTemporaryCartList() {
+            const container = document.getElementById('cartItemsContainer');
+            const totalDisplay = document.getElementById('cartTotalVal');
+            const badgeCount = document.getElementById('cartBadgeCountVal');
+            container.innerHTML = "";
+
+            if(currentCartItems.length === 0) {
+                container.innerHTML = `<span class="cart-empty-text" data-i18n="emptyCart">${translations[currentLang].emptyCart}</span>`;
+                totalDisplay.innerText = "Rp 0";
+                badgeCount.innerText = `0 Items`;
+                return;
+            }
+
+            let computedSumPrice = 0;
+            let totalQtyItems = 0;
+
+            currentCartItems.forEach((item, index) => {
+                computedSumPrice += (item.price * item.qty);
+                totalQtyItems += item.qty;
+
+                const div = document.createElement('div');
+                div.className = "cart-row-item";
+                div.innerHTML = `
+                    <span><strong>${item.name}</strong> <span style="color:#0052cc">x${item.qty}</span></span>
+                    <div>
+                        <span style="margin-right:8px; font-weight:600; color:var(--text-muted)">Rp ${(item.price * item.qty).toLocaleString('id-ID')}</span>
+                        <button class="btn-delete-item" onclick="removeSingleCartRow(${index})">&times;</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+
+            totalDisplay.innerText = `Rp ${computedSumPrice.toLocaleString('id-ID')}`;
+            badgeCount.innerText = `${totalQtyItems} Items`;
+        }
+
+        // --- ENQUEUE ---
+        function submitToKitchenQueue() {
+            const nameField = document.getElementById('customerName');
+            
+            if(nameField.value.trim() === "" || currentCartItems.length === 0) {
+                alert(translations[currentLang].alertError);
+                return;
+            }
+
+            let orderBillTotal = currentCartItems.reduce((sum, item) => sum + (item.price * item.qty), 0);
+
+            queue.push({
+                queueNum: globalIdCounter++,
+                customer: nameField.value.trim().toUpperCase(),
+                service: chosenServiceType,
+                items: [...currentCartItems],
+                billTotal: orderBillTotal
+            });
+
+            nameField.value = "";
+            currentCartItems = [];
+            renderTemporaryCartList();
+
+            updateAllLayoutViews();
+        }
+
+        // --- DEQUEUE ---
+        function dequeueOrderFromKitchen() {
+            if(queue.length === 0) return;
+
+            const completedTask = queue.shift();
+            cumulativeServedCount++;
+            historyLog.push(completedTask);
+
+            // AUDIO SPEECH ENGINE CALL FITUR
+            triggerVoiceCallSystemAnnouncement(completedTask);
+
+            let message = translations[currentLang].alertReady
+                            .replace("{id}", completedTask.queueNum)
+                            .replace("{name}", completedTask.customer);
+            alert(message);
+
+            updateAllLayoutViews();
+        }
+
+        // Voice Engine Panggilan Suara Otomatis
+        function triggerVoiceCallSystemAnnouncement(orderObj) {
+            if ('speechSynthesis' in window) {
+                let callText = "";
+                let languageCode = "id-ID";
+
+                if (currentLang === 'id') {
+                    callText = `Pesanan nomor antrean ${orderObj.queueNum} atas nama ${orderObj.customer} sudah siap!`;
+                    languageCode = "id-ID";
+                } else {
+                    callText = `Order number ${orderObj.queueNum} for ${orderObj.customer} is ready!`;
+                    languageCode = "en-US";
+                }
+
+                const speechUtterance = new SpeechSynthesisUtterance(callText);
+                speechUtterance.lang = languageCode;
+                speechUtterance.rate = 0.95;
+                window.speechSynthesis.speak(speechUtterance);
+            }
+        }
+
+        // Void/Cancel Order di Tengah Antrean Array
+        function voidActiveOrderFromQueue(indexPosition) {
+            const isConfirmed = confirm(translations[currentLang].voidConfirm);
+            if (isConfirmed) {
+                queue.splice(indexPosition, 1);
+                updateAllLayoutViews();
+            }
+        }
+
+        // Export History Log ke format file berkas CSV
+        function exportHistoryLogsToCSV() {
+            if (historyLog.length === 0) return;
+
+            let csvDataRowsString = "";
+            if (currentLang === 'id') {
+                csvDataRowsString = "ID Antrean,Nama Pelanggan,Jenis Layanan,Detail Items Pesanan,Total Pembayaran (IDR)\n";
+            } else {
+                csvDataRowsString = "Queue ID,Customer Name,Service Type,Detail Ordered Items,Total Bill Amount (IDR)\n";
+            }
+
+            historyLog.forEach(row => {
+                let itemsFormString = row.items.map(it => `${it.name} (x${it.qty})`).join(' | ');
+                csvDataRowsString += `Q-${row.queueNum},${row.customer},${row.service},"${itemsFormString}",${row.billTotal}\n`;
+            });
+
+            const csvBlob = new Blob([csvDataRowsString], { type: 'text/csv;charset=utf-8;' });
+            const downloadUrl = URL.createObjectURL(csvBlob);
+            const anchorLink = document.createElement("a");
+            
+            anchorLink.setAttribute("href", downloadUrl);
+            anchorLink.setAttribute("download", `cafeflow_report_${new Date().toISOString().slice(0,10)}.csv`);
+            anchorLink.style.visibility = 'hidden';
+            
+            document.body.appendChild(anchorLink);
+            anchorLink.click();
+            document.body.removeChild(anchorLink);
+        }
+
+        function updateAllLayoutViews() {
+            const minsUnit = translations[currentLang].minsUnit;
+            const currentWaitCalculated = `${queue.length * 10} ${minsUnit}`;
+
+            document.getElementById('waitLabelText').innerText = translations[currentLang].waitLabel;
+            document.getElementById('globalWaitTimeVal').innerText = currentWaitCalculated;
+
+            // Sync Analytics Panels Counters
+            document.getElementById('statActiveVal').innerText = queue.length;
+            document.getElementById('statServedVal').innerText = cumulativeServedCount;
+            document.getElementById('statWaitVal').innerText = currentWaitCalculated;
+
+            renderKitchenMonitorView();
+            renderAnalyticsTableLogs();
+        }
+
+        function renderKitchenMonitorView() {
+            const container = document.getElementById('kitchenKanbanList');
+            const completeBtn = document.getElementById('btnCompleteOrder');
+            container.innerHTML = "";
+
+            if(queue.length === 0) {
+                container.innerHTML = `<div class="empty-placeholder" data-i18n="emptyQueue">${translations[currentLang].emptyQueue}</div>`;
+                completeBtn.disabled = true;
+                return;
+            }
+
+            completeBtn.disabled = false;
+
+            queue.forEach((order, index) => {
+                const card = document.createElement('div');
+                card.className = `kanban-card ${index === 0 ? 'active-now' : ''}`;
+                const srvClass = order.service === 'Dine In' ? 'badge-dine' : 'badge-take';
+                
+                let subItemsLines = "";
+                order.items.forEach(it => {
+                    subItemsLines += `<li>${it.qty}x ${it.name}</li>`;
+                });
+
+                card.innerHTML = `
+                    <div class="card-header-badge-row">
+                        <span class="id-badge">Q-${order.queueNum}</span>
+                        <div class="right-header-actions-wrap">
+                            <button class="btn-void-order-action" onclick="voidActiveOrderFromQueue(${index})" data-i18n="btnVoid">
+                                ${translations[currentLang].btnVoid}
+                            </button>
+                            <span class="srv-badge ${srvClass}">
+                                ${order.service === 'Dine In' ? translations[currentLang].optDine : translations[currentLang].optTake}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="cust-name-header">${order.customer}</div>
+                    <ul class="sub-items-ul">${subItemsLines}</ul>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderAnalyticsTableLogs() {
+            const tableBody = document.getElementById('analyticsTableBody');
+            tableBody.innerHTML = "";
+
+            if (historyLog.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="empty-placeholder" style="text-align:center" data-i18n="emptyHistory">${translations[currentLang].emptyHistory}</td></tr>`;
+                return;
+            }
+
+            for (let i = historyLog.length - 1; i >= 0; i--) {
+                const dataRow = historyLog[i];
+                const tr = document.createElement('tr');
+                let detailItemsFormatted = dataRow.items.map(it => `${it.name} (${it.qty})`).join(', ');
+
+                tr.innerHTML = `
+                    <td><strong>Q-${dataRow.queueNum}</strong></td>
+                    <td>${dataRow.customer}</td>
+                    <td><span style="font-weight:600; color:${dataRow.service === 'Dine In' ? 'var(--dine-in)' : 'var(--take-away)'}">${dataRow.service === 'Dine In' ? translations[currentLang].optDine : translations[currentLang].optTake}</span></td>
+                    <td>${detailItemsFormatted}</td>
+                    <td><strong>Rp ${dataRow.billTotal.toLocaleString('id-ID')}</strong></td>
+                `;
+                tableBody.appendChild(tr);
+            }
+        }
+    </script>
+</body>
+</html>
